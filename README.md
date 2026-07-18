@@ -101,6 +101,8 @@ TELEGRAM_WEBHOOK_URL=https://your-public-tunnel-url/telegram/webhook
 TRIGGER_SECRET_KEY=your-trigger-development-key
 OLLAMA_URL=http://127.0.0.1:11434/api/generate
 OLLAMA_MODEL=qwen2.5:7b
+CONVERSATION_LOG_PATH=conversations/telegram-conversations.jsonl
+CONVERSATION_TRANSCRIPT_PATH=conversations/telegram-conversations.txt
 PORT=3000
 ```
 
@@ -119,6 +121,15 @@ Windows PowerShell:
 ```
 
 `OLLAMA_MODEL` must exactly match a model shown by `ollama list`.
+
+## Conversation log
+
+Each generated reply is saved locally in two files, created automatically after the first successful model response:
+
+- `conversations/telegram-conversations.jsonl` contains structured JSON records for software processing.
+- `conversations/telegram-conversations.txt` is a readable English transcript with `Student` and `Teacher` labels.
+
+Set `CONVERSATION_LOG_PATH` or `CONVERSATION_TRANSCRIPT_PATH` in `.env` to store either file elsewhere. Conversation logs contain private chat content and are ignored by Git by default.
 
 ## 6. Start a public HTTPS tunnel
 
