@@ -22,7 +22,7 @@ Install the following on the device that will run the bot:
 - A Telegram account and bot token from [@BotFather](https://t.me/BotFather)
 - A Trigger.dev account and project API key
 
-The default `gpt-oss:20b` model is large. If the device does not have enough memory/storage, install a smaller Ollama model and set `OLLAMA_MODEL` to its exact name instead.
+The default `qwen2.5:7b` model is large. If the device does not have enough memory/storage, install a smaller Ollama model and set `OLLAMA_MODEL` to its exact name instead.
 
 ## 1. Get the code and install dependencies
 
@@ -45,7 +45,7 @@ npm install
 Install Ollama for your operating system from [ollama.com](https://ollama.com/), then download the model:
 
 ```bash
-ollama pull gpt-oss:20b
+ollama pull qwen2.5:7b
 ```
 
 Verify it is installed:
@@ -100,7 +100,7 @@ TELEGRAM_WEBHOOK_SECRET=a-long-random-secret
 TELEGRAM_WEBHOOK_URL=https://your-public-tunnel-url/telegram/webhook
 TRIGGER_SECRET_KEY=your-trigger-development-key
 OLLAMA_URL=http://127.0.0.1:11434/api/generate
-OLLAMA_MODEL=gpt-oss:20b
+OLLAMA_MODEL=qwen2.5:7b
 PORT=3000
 ```
 
@@ -181,7 +181,7 @@ OLLAMA_MODEL=<model-name>
 For example, the default configuration uses:
 
 ```dotenv
-OLLAMA_MODEL=gpt-oss:20b
+OLLAMA_MODEL=qwen2.5:7b
 ```
 
 ## Troubleshooting

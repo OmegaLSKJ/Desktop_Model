@@ -1,7 +1,7 @@
 import { task } from "@trigger.dev/sdk";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "gpt-oss:20b";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "qwen2.5:7b";
 
 if (!TELEGRAM_TOKEN) {
   throw new Error("TELEGRAM_TOKEN is not configured.");
