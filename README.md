@@ -1,248 +1,322 @@
-# MyClassBot
+# MyClassBot 🤖
 
-MyClassBot is a Telegram bot that sends each incoming message to a local Ollama model and replies in the Telegram chat. Trigger.dev runs the reply task, while a small local HTTP server receives Telegram webhooks.
+A Telegram bot that forwards messages to a local Ollama LLM and returns responses. Built with [Trigger.dev](https://trigger.dev) for task orchestration.
 
-It can run on macOS, Windows, or Linux. The services below must run on the same device when using a local Ollama model.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## How it works
+---
 
-```text
-Telegram -> public HTTPS tunnel -> local webhook server -> Trigger.dev task -> local Ollama -> Telegram reply
+## 📋 Table of Contents
+
+1. [What is MyClassBot?](#what-is-myclassbot)
+2. [How It Works](#how-it-works)
+3. [Before You Begin](#before-you-begin)
+4. [Step-by-Step Setup](#step-by-step-setup)
+5. [Configuration](#configuration)
+6. [Running the Bot](#running-the-bot)
+7. [Changing Models](#changing-models)
+8. [Troubleshooting](#troubleshooting)
+9. [Security Notes](#security-notes)
+
+---
+
+## What is MyClassBot?
+
+MyClassBot is a Telegram bot that:
+- Receives messages from your Telegram chat
+- Sends them to a local Ollama AI model
+- Returns the AI's response back to your chat
+- Logs all conversations for later review
+
+**Perfect for:** Learning, tutoring, coding assistance, or just chatting with an AI.
+
+---
+
+## How It Works
+
+```
+Telegram → HTTPS Tunnel → Local Webhook → Trigger.dev → Ollama → Telegram
 ```
 
-Telegram cannot call `localhost` directly, so the webhook server must be exposed through a public HTTPS tunnel.
+**Why the tunnel?** Telegram needs a public URL to send messages. Since your computer is local, we use ngrok to create a temporary public address.
 
-## Requirements
+---
 
-Install the following on the device that will run the bot:
+## Before You Begin
 
-- [Node.js](https://nodejs.org/) 20 or later (the current LTS release is recommended)
-- [Ollama](https://ollama.com/)
-- A public HTTPS tunnel, such as [ngrok](https://ngrok.com/)
-- A Telegram account and bot token from [@BotFather](https://t.me/BotFather)
-- A Trigger.dev account and project API key
+### ✅ Required Accounts & Tools
 
-The default `qwen2.5:7b` model is large. If the device does not have enough memory/storage, install a smaller Ollama model and set `OLLAMA_MODEL` to its exact name instead.
+| Item | How to Get It |
+|------|---------------|
+| **Node.js 20+** | Download from [nodejs.org](https://nodejs.org/) |
+| **Ollama** | Download from [ollama.com](https://ollama.com/) |
+| **ngrok** | Download from [ngrok.com](https://ngrok.com/) |
+| **Telegram Bot Token** | Message [@BotFather](https://t.me/BotFather) → `/newbot` |
+| **Trigger.dev Account** | Sign up at [trigger.dev](https://trigger.dev) |
 
-## 1. Get the code and install dependencies
+### ⚠️ Important Notes
 
-Open Terminal (macOS/Linux) or PowerShell (Windows), then run:
+- **Memory:** The default model (`qwen2.5:7b`) needs ~8GB RAM. Use a smaller model if needed.
+- **All services must run on the same computer** when using local Ollama.
+- **ngrok URLs change** when you restart, so update your webhook if needed.
 
+---
+
+## Step-by-Step Setup
+
+### Step 1: Get the Code
+
+**Option A - Clone (Recommended)**
 ```bash
 git clone <your-repository-url>
 cd MyClassBot
-npm install
 ```
 
-If you copied the project instead of cloning it, open a terminal in the project folder and run only:
+**Option B - Copy Files**
+- Download the project files
+- Open PowerShell/Terminal in the project folder
+
+### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-## 2. Install and start Ollama
+### Step 3: Install Ollama and Download a Model
 
-Install Ollama for your operating system from [ollama.com](https://ollama.com/), then download the model:
+1. Install Ollama from [ollama.com](https://ollama.com/)
+2. Download the AI model:
+   ```bash
+   ollama pull qwen2.5:7b
+   ```
+3. Verify installation:
+   ```bash
+   ollama list
+   ```
 
-```bash
-ollama pull qwen2.5:7b
-```
+### Step 4: Create Your Telegram Bot
 
-Verify it is installed:
+1. Open Telegram on your phone/computer
+2. Search for **@BotFather**
+3. Send the message: `/newbot`
+4. Follow the prompts to name your bot
+5. **Copy the token** BotFather sends you - you'll need it in Step 6
 
-```bash
-ollama list
-```
+### Step 5: Set Up Trigger.dev
 
-Ollama normally starts automatically after installation. If it is not running, start it with:
+1. Go to [Trigger.dev dashboard](https://cloud.trigger.dev/)
+2. Create a new project (or use an existing one)
+3. Go to **Settings → API Keys**
+4. Create a **Development API Key**
+5. Copy the key (it starts with `tr_dev_`)
 
-```bash
-ollama serve
-```
+### Step 6: Configure Environment Variables
 
-Leave that terminal open if your operating system does not run Ollama as a background service.
+1. Copy the example file:
+   ```bash
+   # macOS/Linux
+   cp .env.example .env
+   
+   # Windows PowerShell
+   Copy-Item .env.example .env
+   ```
 
-## 3. Create the Telegram bot
+2. Open `.env` in a text editor and fill in your values:
 
-1. Open [@BotFather](https://t.me/BotFather) in Telegram.
-2. Run `/newbot` and complete the prompts.
-3. Copy the bot token BotFather provides. Treat it like a password.
+   ```dotenv
+   # ──────────────────────────────────────────────────────────────
+   # TELEGRAM SETTINGS
+   # ──────────────────────────────────────────────────────────────
+   TELEGRAM_TOKEN=your-bot-token-from-botfather-here
+   
+   # ──────────────────────────────────────────────────────────────
+   # SECURITY - Generate these with the commands below
+   # ──────────────────────────────────────────────────────────────
+   TELEGRAM_WEBHOOK_SECRET=your-random-hex-string-here
+   TELEGRAM_WEBHOOK_URL=https://your-ngrok-url.telegram/webhook
+   
+   # ──────────────────────────────────────────────────────────────
+   # TRIGGER.DEV SETTINGS
+   # ──────────────────────────────────────────────────────────────
+   TRIGGER_SECRET_KEY=your-trigger-dev-key-here
+   
+   # ──────────────────────────────────────────────────────────────
+   # OLLAMA SETTINGS
+   # ──────────────────────────────────────────────────────────────
+   OLLAMA_URL=http://127.0.0.1:11434/api/generate
+   OLLAMA_MODEL=qwen2.5:7b
+   
+   # ──────────────────────────────────────────────────────────────
+   # LOGGING (optional)
+   # ──────────────────────────────────────────────────────────────
+   CONVERSATION_LOG_PATH=conversations/telegram-conversations.jsonl
+   CONVERSATION_TRANSCRIPT_PATH=conversations/telegram-conversations.txt
+   
+   # ──────────────────────────────────────────────────────────────
+   # SERVER SETTINGS (usually don't need to change)
+   # ──────────────────────────────────────────────────────────────
+   PORT=3000
+   ```
 
-## 4. Create and configure a Trigger.dev project
+3. **Generate secure secrets:**
+   ```bash
+   # macOS/Linux
+   openssl rand -hex 32
+   
+   # Windows PowerShell
+   [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
+   ```
+   Copy the output and paste it for `TELEGRAM_WEBHOOK_SECRET`.
 
-1. Create a project in the [Trigger.dev dashboard](https://cloud.trigger.dev/).
-2. Create a development API key for that project.
-3. Copy the key; it normally begins with `tr_dev_`.
+---
 
-The project ID in `trigger.config.ts` must belong to the same Trigger.dev project as `TRIGGER_SECRET_KEY`. Update it if you use a different project.
+## Running the Bot
 
-## 5. Configure environment variables
+### Step 7: Start ngrok (Get Your Public URL)
 
-Create a local environment file from the template:
-
-macOS/Linux:
-
-```bash
-cp .env.example .env
-```
-
-Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Open `.env` and provide values for the following settings:
-
-```dotenv
-TELEGRAM_TOKEN=your-token-from-botfather
-TELEGRAM_WEBHOOK_SECRET=a-long-random-secret
-TELEGRAM_WEBHOOK_URL=https://your-public-tunnel-url/telegram/webhook
-TRIGGER_SECRET_KEY=your-trigger-development-key
-OLLAMA_URL=http://127.0.0.1:11434/api/generate
-OLLAMA_MODEL=qwen2.5:7b
-CONVERSATION_LOG_PATH=conversations/telegram-conversations.jsonl
-CONVERSATION_TRANSCRIPT_PATH=conversations/telegram-conversations.txt
-PORT=3000
-```
-
-Generate a strong webhook secret with one of these commands:
-
-macOS/Linux:
-
-```bash
-openssl rand -hex 32
-```
-
-Windows PowerShell:
-
-```powershell
-[guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
-```
-
-`OLLAMA_MODEL` must exactly match a model shown by `ollama list`.
-
-## Conversation log
-
-Each generated reply is saved locally in two files, created automatically after the first successful model response:
-
-- `conversations/telegram-conversations.jsonl` contains structured JSON records for software processing.
-- `conversations/telegram-conversations.txt` is a readable English transcript with `Student` and `Teacher` labels.
-
-Set `CONVERSATION_LOG_PATH` or `CONVERSATION_TRANSCRIPT_PATH` in `.env` to store either file elsewhere. Conversation logs contain private chat content and are ignored by Git by default.
-
-## 6. Start a public HTTPS tunnel
-
-Telegram requires a publicly reachable HTTPS URL. With ngrok installed and authenticated, run:
-
+Open a terminal and run:
 ```bash
 ngrok http 3000
 ```
 
-ngrok displays an HTTPS forwarding URL such as `https://example.ngrok-free.app`. Copy it and set this value in `.env`:
-
-```dotenv
-TELEGRAM_WEBHOOK_URL=https://example.ngrok-free.app/telegram/webhook
+You'll see output like:
+```
+Forwarding: https://abc123.ngrok-free.app -> http://localhost:3000
 ```
 
-Keep ngrok running. Free tunnel URLs usually change when ngrok restarts, in which case update `.env` and register the webhook again.
+**Copy the HTTPS URL** (e.g., `https://abc123.ngrok-free.app`).
 
-## 7. Start the bot
+### Step 8: Update Your Webhook URL
 
-Open three terminals in the project folder. Keep all three processes running.
+1. Open `.env`
+2. Update `TELEGRAM_WEBHOOK_URL`:
+   ```dotenv
+   TELEGRAM_WEBHOOK_URL=https://abc123.ngrok-free.app/telegram/webhook
+   ```
 
-Terminal 1 — Trigger.dev worker:
-
-```bash
-npm run dev:trigger
-```
-
-Terminal 2 — local Telegram webhook receiver:
-
-```bash
-npm run dev:webhook
-```
-
-Terminal 3 — ngrok tunnel:
-
-```bash
-ngrok http 3000
-```
-
-After the tunnel is live and `TELEGRAM_WEBHOOK_URL` is correct, register the webhook once:
+### Step 9: Register the Webhook with Telegram
 
 ```bash
 npm run register:webhook
 ```
 
-Open your Telegram bot chat, press **Start**, and send a message. The bot should reply after the Trigger.dev task completes.
+You should see: `Webhook registered successfully`
 
-## Changing the model
+### Step 10: Start All Services
 
-Download the model with Ollama, then set its exact name in `.env` and restart the Trigger.dev worker:
+Open **three separate terminals** in the project folder:
 
-```bash
-ollama pull <model-name>
-```
+| Terminal | Command | What It Does |
+|----------|---------|--------------|
+| **Terminal 1** | `npm run dev:trigger` | Runs the AI task worker |
+| **Terminal 2** | `npm run dev:webhook` | Listens for Telegram messages |
+| **Terminal 3** | `ngrok http 3000` | Creates public URL (keep running) |
 
-```dotenv
-OLLAMA_MODEL=<model-name>
-```
+**Keep all three running!**
 
-For example, the default configuration uses:
+### Step 11: Test Your Bot
 
-```dotenv
-OLLAMA_MODEL=qwen2.5:7b
-```
+1. Open Telegram
+2. Find your bot (search by the name you gave it in Step 4)
+3. Tap **Start**
+4. Send any message (e.g., "Hello!")
+5. Wait a few seconds for the response
+
+---
+
+## Changing Models
+
+Want to use a different AI model?
+
+1. Pull the new model:
+   ```bash
+   ollama pull <model-name>
+   ```
+   Examples: `llama3.2:1b`, `phi3:latest`, `mistral:7b`
+
+2. Update `.env`:
+   ```dotenv
+   OLLAMA_MODEL=<model-name>
+   ```
+
+3. Restart the Trigger.dev worker (Terminal 1):
+   - Press `Ctrl+C` to stop
+   - Run `npm run dev:trigger` again
+
+---
 
 ## Troubleshooting
 
-### Telegram reports `502 Bad Gateway`
+### ❌ "502 Bad Gateway" Error
 
-The HTTPS tunnel cannot reach the local webhook server. Confirm all of the following:
+Telegram can't reach your webhook. Check:
 
-- `npm run dev:webhook` is still running and says it is listening on port 3000.
-- ngrok is still running and forwarding to port 3000.
-- `TELEGRAM_WEBHOOK_URL` contains the current ngrok HTTPS URL followed by `/telegram/webhook`.
-- Run `npm run register:webhook` again after changing the tunnel URL.
+1. ✅ Is `npm run dev:webhook` running? (Terminal 2)
+2. ✅ Is ngrok running? (Terminal 3)
+3. ✅ Does `TELEGRAM_WEBHOOK_URL` match the ngrok URL?
+4. ✅ Did you re-run `npm run register:webhook` after changing URLs?
 
-### The bot accepts messages but does not reply
+### ❌ Bot Doesn't Reply
 
-- Ensure `npm run dev:trigger` is running without errors.
-- Ensure Ollama is running and `ollama list` includes the value of `OLLAMA_MODEL`.
-- Check the Trigger.dev terminal for task errors.
+1. Check Trigger.dev worker (Terminal 1) - any error messages?
+2. Run `ollama list` - is your model listed?
+3. Is Ollama running? Run `ollama serve` if not.
 
-If Trigger.dev fails with an error mentioning `.trigger/tmp/store`, stop the worker, remove its disposable local cache, and start it again:
+### ❌ "401 Unauthorized" Error
 
-macOS/Linux:
+Your webhook secret is wrong:
+
+1. Generate a new secret:
+   ```bash
+   openssl rand -hex 32
+   ```
+2. Update `TELEGRAM_WEBHOOK_SECRET` in `.env`
+3. Re-register the webhook:
+   ```bash
+   npm run register:webhook
+   ```
+
+### ❌ Trigger.dev Shows Cache Errors
+
+Delete the cache folder:
 
 ```bash
+# macOS/Linux
 rm -rf .trigger
-npm run dev:trigger
-```
 
-Windows PowerShell:
-
-```powershell
+# Windows PowerShell
 Remove-Item -Recurse -Force .trigger
-npm run dev:trigger
 ```
 
-### Telegram returns `401 Unauthorized`
+Then restart Terminal 1: `npm run dev:trigger`
 
-`TELEGRAM_WEBHOOK_SECRET` does not match the secret registered with Telegram. Check `.env` and run `npm run register:webhook` again.
+---
 
-### Ollama connection fails
+## Security Notes
 
-Make sure Ollama is running on the same device and that `.env` contains:
+- 🔒 **Never commit `.env`** - it contains secrets (already in `.gitignore`)
+- 🔄 If you share your token or keys, **revoke them immediately** in BotFather or Trigger.dev
+- 📡 This setup is for **local development only** - Trigger.dev Cloud can't reach your local Ollama
 
-```dotenv
-OLLAMA_URL=http://127.0.0.1:11434/api/generate
+---
+
+## Project Files
+
+```
+MyClassBot/
+├── src/
+│   ├── telegram-webhook.ts          # Handles incoming Telegram messages
+│   ├── register-telegram-webhook.ts # Registers webhook with Telegram
+│   └── trigger/
+│       └── telegram-bot.ts          # Trigger.dev task that calls Ollama
+├── conversations/                     # Auto-generated chat logs
+├── trigger.config.ts                  # Trigger.dev project settings
+├── package.json                       # Project dependencies
+└── README.md                          # This file
 ```
 
-## Security and deployment notes
+---
 
-- Never commit `.env`, bot tokens, Trigger keys, or webhook secrets. The supplied `.gitignore` excludes `.env` files.
-- If a token is exposed, revoke/regenerate it immediately in BotFather or Trigger.dev and update `.env`.
-- This project is designed for local development: a Trigger.dev Cloud worker cannot reach `127.0.0.1` on your device. To deploy it permanently, host Ollama on a network-accessible server (with authentication) or move the model inference to a hosted provider.
-- For a reliable always-on bot, run the webhook receiver, Trigger worker, Ollama, and tunnel as managed services on a device/server that remains online.
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
