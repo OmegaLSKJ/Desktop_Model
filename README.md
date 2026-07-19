@@ -94,15 +94,31 @@ npm install
    ollama list
    ```
 
-### Step 4: Create Your Telegram Bot
+### Step 4: Start Ollama
+
+**Ollama must be running before starting the bot.**
+
+```bash
+# macOS/Linux
+ollama serve
+
+# Windows PowerShell
+ollama serve
+```
+
+Leave this terminal running or let Ollama run as a background service (it usually starts automatically after installation).
+
+> **Tip:** If Ollama is already running, you can skip this step. Check with `ollama list` to confirm.
+
+### Step 5: Create Your Telegram Bot
 
 1. Open Telegram on your phone/computer
 2. Search for **@BotFather**
 3. Send the message: `/newbot`
 4. Follow the prompts to name your bot
-5. **Copy the token** BotFather sends you - you'll need it in Step 6
+5. **Copy the token** BotFather sends you - you'll need it in Step 7
 
-### Step 5: Set Up Trigger.dev
+### Step 6: Set Up Trigger.dev
 
 1. Go to [Trigger.dev dashboard](https://cloud.trigger.dev/)
 2. Create a new project (or use an existing one)
@@ -110,7 +126,7 @@ npm install
 4. Create a **Development API Key**
 5. Copy the key (it starts with `tr_dev_`)
 
-### Step 6: Configure Environment Variables
+### Step 7: Configure Environment Variables
 
 1. Copy the example file:
    ```bash
@@ -172,7 +188,7 @@ npm install
 
 ## Running the Bot
 
-### Step 7: Start ngrok (Get Your Public URL)
+### Step 8: Start ngrok (Get Your Public URL)
 
 Open a terminal and run:
 ```bash
@@ -186,7 +202,7 @@ Forwarding: https://abc123.ngrok-free.app -> http://localhost:3000
 
 **Copy the HTTPS URL** (e.g., `https://abc123.ngrok-free.app`).
 
-### Step 8: Update Your Webhook URL
+### Step 9: Update Your Webhook URL
 
 1. Open `.env`
 2. Update `TELEGRAM_WEBHOOK_URL`:
@@ -194,7 +210,7 @@ Forwarding: https://abc123.ngrok-free.app -> http://localhost:3000
    TELEGRAM_WEBHOOK_URL=https://abc123.ngrok-free.app/telegram/webhook
    ```
 
-### Step 9: Register the Webhook with Telegram
+### Step 10: Register the Webhook with Telegram
 
 ```bash
 npm run register:webhook
@@ -202,7 +218,7 @@ npm run register:webhook
 
 You should see: `Webhook registered successfully`
 
-### Step 10: Start All Services
+### Step 11: Start All Services
 
 Open **three separate terminals** in the project folder:
 
@@ -214,10 +230,10 @@ Open **three separate terminals** in the project folder:
 
 **Keep all three running!**
 
-### Step 11: Test Your Bot
+### Step 12: Test Your Bot
 
 1. Open Telegram
-2. Find your bot (search by the name you gave it in Step 4)
+2. Find your bot (search by the name you gave it in Step 5)
 3. Tap **Start**
 4. Send any message (e.g., "Hello!")
 5. Wait a few seconds for the response
