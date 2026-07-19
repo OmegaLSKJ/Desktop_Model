@@ -1,0 +1,23 @@
+{
+  "name": "myclassbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:trigger": "trigger dev",
+    "dev:webhook": "tsx --env-file=.env src/telegram-webhook.ts",
+    "register:webhook": "tsx --env-file=.env src/register-telegram-webhook.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@trigger.dev/sdk": "4.5.4",
+    "undici": "^8.7.0"
+  },
+  "devDependencies": {
+    "trigger.dev": "4.5.4",
+    "tsx": "^4.21.0"
+  }
+}
