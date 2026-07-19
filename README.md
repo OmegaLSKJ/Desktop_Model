@@ -186,6 +186,19 @@ Leave this terminal running or let Ollama run as a background service (it usuall
 
 ---
 
+## Available npm Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run setup` | Install dependencies and download the default model |
+| `npm run start:ollama` | Start the Ollama server |
+| `npm run dev:trigger` | Start Trigger.dev worker |
+| `npm run dev:webhook` | Start local webhook server |
+| `npm run register:webhook` | Register webhook with Telegram |
+| `npm run start` | Start all services together (trigger + webhook + ngrok) |
+
+---
+
 ## Running the Bot
 
 ### Step 8: Start ngrok (Get Your Public URL)
@@ -219,6 +232,16 @@ npm run register:webhook
 You should see: `Webhook registered successfully`
 
 ### Step 11: Start All Services
+
+**Option A - Combined (Recommended):**
+
+```bash
+npm run start
+```
+
+This starts all three services in one command using `concurrently`.
+
+**Option B - Separate Terminals:**
 
 Open **three separate terminals** in the project folder:
 

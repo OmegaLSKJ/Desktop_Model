@@ -6,7 +6,10 @@
   "scripts": {
     "dev:trigger": "trigger dev",
     "dev:webhook": "tsx --env-file=.env src/telegram-webhook.ts",
-    "register:webhook": "tsx --env-file=.env src/register-telegram-webhook.ts"
+    "register:webhook": "tsx --env-file=.env src/register-telegram-webhook.ts",
+    "start": "concurrently \"npm run dev:trigger\" \"npm run dev:webhook\" \"ngrok http 3000\"",
+    "start:ollama": "ollama serve",
+    "setup": "ollama pull qwen2.5:7b && npm install"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +20,7 @@
     "undici": "^8.7.0"
   },
   "devDependencies": {
+    "concurrently": "^10.0.3",
     "trigger.dev": "4.5.4",
     "tsx": "^4.21.0"
   }
